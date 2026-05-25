@@ -1,0 +1,6 @@
+{
+  "name": "Giffoni Connect",
+  "description": "Portal bOSS para gestão e Portal do Cliente acessível via slug",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,189 @@
+{
+  "entities": {
+    "cliente": {
+      "title": "Cliente",
+      "description": "Dados cadastrais do cliente (Pessoa Física ou Jurídica).",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "ID único do cliente" },
+        "slug": { "type": "string", "description": "Slug de URL para o portal do cliente" },
+        "nome": { "type": "string", "description": "Nome completo ou razão social" },
+        "tipoPessoa": { "type": "string", "enum": ["PF", "PJ"], "description": "Categoria da pessoa jurídica ou física" },
+        "cpf": { "type": "string", "description": "CPF (apenas números ou formatado)" },
+        "cnpj": { "type": "string", "description": "CNPJ (apenas números ou formatado)" },
+        "email": { "type": "string", "description": "E-mail de contato principal" },
+        "telefone": { "type": "string", "description": "Telefone de contato" },
+        "endereco": { "type": "string", "description": "Endereço físico" },
+        "status": { "type": "string", "enum": ["active", "inactive"], "description": "Status de ativação do cliente" },
+        "criadoEm": { "type": "string", "format": "date-time", "description": "Data de criação" },
+        "atualizadoEm": { "type": "string", "format": "date-time", "description": "Data da última atualização" }
+      },
+      "required": ["id", "slug", "nome"]
+    },
+    "caso": {
+      "title": "Caso",
+      "description": "Processo judicial ou contencioso administrativo do cliente.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "ID do caso" },
+        "clienteId": { "type": "string", "description": "ID do cliente vinculado" },
+        "numeroProcesso": { "type": "string", "description": "Número do processo judicial" },
+        "titulo": { "type": "string", "description": "Título identificador do caso" },
+        "area": { "type": "string", "description": "Área do direito (Cível, Tributário, etc)" },
+        "comarca": { "type": "string", "description": "Comarca ou foro de julgamento" },
+        "vara": { "type": "string", "description": "Vara judicial" },
+        "tribunal": { "type": "string", "description": "Tribunal competente (TJSP, TRF3, etc)" },
+        "status": { "type": "string", "enum": ["active", "suspended", "closed"], "description": "Status do caso" },
+        "fase": { "type": "string", "description": "Fase atual do processo" },
+        "resumo": { "type": "string", "description": "Resumo fático ou estratégico" },
+        "proximoPasso": { "type": "string", "description": "Próximo passo processual planejado" },
+        "criadoEm": { "type": "string", "format": "date-time", "description": "Data de cadastro" },
+        "atualizadoEm": { "type": "string", "format": "date-time", "description": "Data de atualização" }
+      },
+      "required": ["id", "clienteId", "titulo"]
+    },
+    "prova": {
+      "title": "Prova",
+      "description": "Documentos e arquivos de prova anexados aos casos.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "ID da prova" },
+        "clienteId": { "type": "string", "description": "ID do cliente relator" },
+        "casoId": { "type": "string", "description": "ID do caso associado" },
+        "nome": { "type": "string", "description": "Nome descritivo do documento" },
+        "tipo": { "type": "string", "description": "Tipo de prova (Relatório, Diário de obras, etc)" },
+        "descricao": { "type": "string", "description": "Descrição detalhada" },
+        "status": { "type": "string", "enum": ["under_review", "approved", "rejected"], "description": "Estado de validação pela equipe jurídica" },
+        "url": { "type": "string", "description": "Link público ou fictício do arquivo" },
+        "criadoEm": { "type": "string", "format": "date-time", "description": "Data de upload" }
+      },
+      "required": ["id", "clienteId", "casoId", "nome"]
+    },
+    "informacao": {
+      "title": "Informacao",
+      "description": "Avisos e comunicados importantes publicados para os clientes.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "ID do comunicado" },
+        "clienteId": { "type": "string", "description": "ID do cliente de destino" },
+        "casoId": { "type": "string", "description": "ID do caso de referência" },
+        "titulo": { "type": "string", "description": "Título curto do aviso" },
+        "conteudo": { "type": "string", "description": "Texto do comunicado" },
+        "visivelParaCliente": { "type": "boolean", "description": "Se é exibido no portal do cliente" },
+        "criadoEm": { "type": "string", "format": "date-time", "description": "Data de publicação" }
+      },
+      "required": ["id", "clienteId", "titulo", "conteudo", "visivelParaCliente"]
+    },
+    "audiencia": {
+      "title": "Audiencia",
+      "description": "Audiências judiciais e sessões de conciliação agendadas.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "ID da audiência" },
+        "clienteId": { "type": "string", "description": "ID do cliente vinculado" },
+        "casoId": { "type": "string", "description": "ID do caso associado" },
+        "data": { "type": "string", "description": "Data (YYYY-MM-DD)" },
+        "horario": { "type": "string", "description": "Horário (HH:MM)" },
+        "modalidade": { "type": "string", "description": "Virtual ou Presencial" },
+        "local": { "type": "string", "description": "Fórum ou plataforma e link" },
+        "link": { "type": "string", "description": "Link opcional para teleaudiência" },
+        "observacoes": { "type": "string", "description": "Observações e preparativos necessários" },
+        "status": { "type": "string", "description": "Status do agendamento" }
+      },
+      "required": ["id", "clienteId", "casoId", "data", "status"]
+    },
+    "pericia": {
+      "title": "Pericia",
+      "description": "Vistorias, perícias contábeis ou de campo.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "ID da perícia" },
+        "clienteId": { "type": "string", "description": "ID do cliente" },
+        "casoId": { "type": "string", "description": "ID do caso" },
+        "data": { "type": "string", "description": "Data (YYYY-MM-DD)" },
+        "horario": { "type": "string", "description": "Horário (HH:MM)" },
+        "perito": { "type": "string", "description": "Nome do perito judicial" },
+        "local": { "type": "string", "description": "Local da vistoria" },
+        "objeto": { "type": "string", "description": "Objeto da auditoria / perícia" },
+        "status": { "type": "string", "enum": ["scheduled", "completed", "delayed"], "description": "Estado do agendamento" },
+        "observacoes": { "type": "string", "description": "Notas adicionais" }
+      },
+      "required": ["id", "clienteId", "casoId", "data", "perito"]
+    },
+    "reuniao": {
+      "title": "Reuniao",
+      "description": "Reuniões internas e agendamentos de atendimento com advogados.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "ID da reunião" },
+        "clienteId": { "type": "string", "description": "ID do cliente" },
+        "data": { "type": "string", "description": "Data (YYYY-MM-DD)" },
+        "horario": { "type": "string", "description": "Horário (HH:MM)" },
+        "assunto": { "type": "string", "description": "Assunto ou pauta" },
+        "modalidade": { "type": "string", "description": "Virtual ou Presencial" },
+        "link": { "type": "string", "description": "Link de acesso online se virtual" },
+        "responsavel": { "type": "string", "description": "Advogado responsável pelo atendimento" },
+        "status": { "type": "string", "enum": ["scheduled", "completed", "canceled"], "description": "Estado" }
+      },
+      "required": ["id", "clienteId", "data", "assunto"]
+    },
+    "financeiro": {
+      "title": "Financeiro",
+      "description": "Faturamento, cobranças e parcelamento de honorários.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "ID da cobrança" },
+        "clienteId": { "type": "string", "description": "ID do cliente associado" },
+        "casoId": { "type": "string", "description": "ID do caso relacionado" },
+        "descricao": { "type": "string", "description": "Descrição do serviço ou honorário" },
+        "valor": { "type": "number", "description": "Valor nominal" },
+        "vencimento": { "type": "string", "description": "Data de vencimento" },
+        "status": { "type": "string", "enum": ["paid", "pending", "late"], "description": "Status do pagamento" },
+        "formaPagamento": { "type": "string", "description": "Forma acordada de pagamento" },
+        "linkPagamento": { "type": "string", "description": "Link opcional para cobrança/boleto/PIX" },
+        "criadoEm": { "type": "string", "format": "date-time", "description": "Data da geração" }
+      },
+      "required": ["id", "clienteId", "valor", "vencimento", "status"]
+    },
+    "portalConfig": {
+      "title": "PortalConfig",
+      "description": "Histórico de acessos e permissões do portal exclusivo.",
+      "type": "object",
+      "properties": {
+        "clienteId": { "type": "string", "description": "ID do cliente" },
+        "slug": { "type": "string", "description": "Slug de acesso" },
+        "portalAtivo": { "type": "boolean", "description": "Se o canal está liberado" },
+        "permissoes": { "type": "array", "description": "Coleção de permissões concedidas" },
+        "ultimoAcesso": { "type": "string", "format": "date-time", "description": "Data do último acesso" },
+        "criadoEm": { "type": "string", "format": "date-time", "description": "Data de criação" }
+      },
+      "required": ["clienteId", "slug", "portalAtivo"]
+    },
+    "usuario": {
+      "title": "Usuario",
+      "description": "Registro de usuários autenticáveis.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "ID interno do usuário" },
+        "nome": { "type": "string", "description": "Nome completo" },
+        "email": { "type": "string", "description": "E-mail cadastrado" },
+        "role": { "type": "string", "enum": ["BOSS", "ADVOGADO", "SECRETARIA", "CLIENTE"], "description": "Tipo de perfil" },
+        "clienteId": { "type": "string", "description": "ID do cliente vinculado se perfil for de CLIENTE" },
+        "ativo": { "type": "boolean", "description": "Se o usuário está habilitado" }
+      },
+      "required": ["id", "nome", "email", "role", "ativo"]
+    }
+  },
+  "firestore": {
+    "clientes/{clienteId}": { "schema": { "$ref": "cliente" }, "description": "Dossiê cadastral" },
+    "casos/{casoId}": { "schema": { "$ref": "caso" }, "description": "Processos jurídicos" },
+    "provas/{provaId}": { "schema": { "$ref": "prova" }, "description": "Arquivos de provas adicionados" },
+    "informacoes/{informacaoId}": { "schema": { "$ref": "informacao" }, "description": "Avisos e comunicados importantes" },
+    "audiencias/{audienciaId}": { "schema": { "$ref": "audiencia" }, "description": "Sessões e audiências" },
+    "pericias/{periciaId}": { "schema": { "$ref": "pericia" }, "description": "Vistorias perícias técnicas" },
+    "reunioes/{reuniaoId}": { "schema": { "$ref": "reuniao" }, "description": "Reuniões particulares" },
+    "financeiro/{financeiroId}": { "schema": { "$ref": "financeiro" }, "description": "Lançamentos e parcelas" },
+    "portalConfigs/{clienteId}": { "schema": { "$ref": "portalConfig" }, "description": "Configurações do canal" },
+    "usuarios/{usuarioId}": { "schema": { "$ref": "usuario" }, "description": "Perfis de usuários" }
+  }
+}
