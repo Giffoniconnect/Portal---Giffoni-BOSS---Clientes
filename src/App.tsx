@@ -7,6 +7,7 @@ import { ClientPortalProvider } from "./contexts/ClientPortalContext";
 
 // Layouts
 import ClienteLayout from "./components/layout/ClienteLayout";
+import ProtectedClienteRoute from "./components/ProtectedClienteRoute";
 
 // Client pages
 import ClienteLogin from "./pages/cliente/Login";
@@ -39,73 +40,91 @@ export default function App() {
             <Route 
               path="/portal-cliente-giffoni/:slug/dashboard" 
               element={
-                <ClienteLayout>
-                  <ClienteDashboard />
-                </ClienteLayout>
+                <ProtectedClienteRoute>
+                  <ClienteLayout>
+                    <ClienteDashboard />
+                  </ClienteLayout>
+                </ProtectedClienteRoute>
               } 
             />
             <Route 
               path="/portal-cliente-giffoni/:slug/dados" 
               element={
-                <ClienteLayout>
-                  <ClienteDados />
-                </ClienteLayout>
+                <ProtectedClienteRoute>
+                  <ClienteLayout>
+                    <ClienteDados />
+                  </ClienteLayout>
+                </ProtectedClienteRoute>
               } 
             />
             <Route 
               path="/portal-cliente-giffoni/:slug/casos" 
               element={
-                <ClienteLayout>
-                  <ClienteCasos />
-                </ClienteLayout>
+                <ProtectedClienteRoute>
+                  <ClienteLayout>
+                    <ClienteCasos />
+                  </ClienteLayout>
+                </ProtectedClienteRoute>
               } 
             />
             <Route 
               path="/portal-cliente-giffoni/:slug/provas" 
               element={
-                <ClienteLayout>
-                  <ClienteProvas />
-                </ClienteLayout>
+                <ProtectedClienteRoute>
+                  <ClienteLayout>
+                    <ClienteProvas />
+                  </ClienteLayout>
+                </ProtectedClienteRoute>
               } 
             />
             <Route 
               path="/portal-cliente-giffoni/:slug/informacoes" 
               element={
-                <ClienteLayout>
-                  <ClienteInformacoes />
-                </ClienteLayout>
+                <ProtectedClienteRoute>
+                  <ClienteLayout>
+                    <ClienteInformacoes />
+                  </ClienteLayout>
+                </ProtectedClienteRoute>
               } 
             />
             <Route 
               path="/portal-cliente-giffoni/:slug/audiencias" 
               element={
-                <ClienteLayout>
-                  <ClienteAudiencias />
-                </ClienteLayout>
+                <ProtectedClienteRoute>
+                  <ClienteLayout>
+                    <ClienteAudiencias />
+                  </ClienteLayout>
+                </ProtectedClienteRoute>
               } 
             />
             <Route 
               path="/portal-cliente-giffoni/:slug/pericias" 
               element={
-                <ClienteLayout>
-                  <ClientePericias />
-                </ClienteLayout>
+                <ProtectedClienteRoute>
+                  <ClienteLayout>
+                    <ClientePericias />
+                  </ClienteLayout>
+                </ProtectedClienteRoute>
               } 
             />
             <Route 
               path="/portal-cliente-giffoni/:slug/reunioes" 
               element={
-                <ClienteLayout>
-                  <ClienteReunioes />
-                </ClienteLayout>
+                <ProtectedClienteRoute>
+                  <ClienteLayout>
+                    <ClienteReunioes />
+                  </ClienteLayout>
+                </ProtectedClienteRoute>
               } 
             />
             <Route 
               path="/portal-cliente-giffoni/:slug/financeiro" 
               element={
-                <ClienteLayout>
-                  <ClienteFinanceiro />
-                </ClienteLayout>
+                <ProtectedClienteRoute>
+                  <ClienteLayout>
+                    <ClienteFinanceiro />
+                  </ClienteLayout>
+                </ProtectedClienteRoute>
               } 
             />
 

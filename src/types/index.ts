@@ -14,6 +14,7 @@ export * from "./financeiro";
 export * from "./usuario";
 export * from "./portal";
 export * from "./informacao";
+export * from "./credencial";
 
 // Legacy type aliases for full backward compatibility with original screens
 export type Client = Cliente;

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { Cliente, Caso, Prova, Audiencia, Pericia, Reuniao, Financeiro } from "../types";
 import { clienteServiceMock } from "../services/clienteService.mock";
 import { useAuth } from "./AuthContext";
@@ -19,7 +19,7 @@ interface ClientPortalContextType {
 const ClientPortalContext = createContext<ClientPortalContextType | undefined>(undefined);
 
 export function ClientPortalProvider({ children }: { children: ReactNode }) {
-  const { clientCred } = useAuth();
+  const { session } = useAuth();
   const [client, setClient] = useState<Cliente | null>(null);
   const [cases, setCases] = useState<Caso[]>([]);
   const [evidence, setEvidence] = useState<Prova[]>([]);
@@ -30,18 +30,18 @@ export function ClientPortalProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadPortalBySlug = async (slug: string): Promise<boolean> => {
+  const loadPortalBySlug = useCallback(async (slug: string): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
 
-    if (!clientCred) {
+    if (!session) {
       setClient(null);
       setError("unauthorized");
       setIsLoading(false);
       return false;
     }
 
-    if (slug !== clientCred.slug) {
+    if (slug !== session.slug) {
       setClient(null);
       setError("mismatch");
       setIsLoading(false);
@@ -49,7 +49,7 @@ export function ClientPortalProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const resolvedClient = await clienteServiceMock.getClienteById(clientCred.clienteId);
+      const resolvedClient = await clienteServiceMock.getClienteById(session.clienteId);
       if (!resolvedClient) {
         setClient(null);
         setError("Portal não encontrado ou indisponível.");
@@ -90,7 +90,7 @@ export function ClientPortalProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
       return false;
     }
-  };
+  }, [session]);
 
   return (
     <ClientPortalContext.Provider

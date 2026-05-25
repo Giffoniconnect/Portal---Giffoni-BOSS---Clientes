@@ -32,15 +32,15 @@ export default function ClienteLayout({ children }: ClienteLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { clientCred, logoutClient } = useAuth();
+  const { session, logoutClient } = useAuth();
   const { client, error, loadPortalBySlug } = useClientPortal();
 
   // Redirect to login if user is not authenticated
   useEffect(() => {
-    if (!clientCred) {
+    if (!session) {
       navigate("/portal-cliente-giffoni/login", { replace: true });
     }
-  }, [clientCred, navigate]);
+  }, [session, navigate]);
 
   // Load client portal data for the slug
   useEffect(() => {
@@ -49,7 +49,7 @@ export default function ClienteLayout({ children }: ClienteLayoutProps) {
     }
   }, [slug, loadPortalBySlug]);
 
-  if (!clientCred) {
+  if (!session) {
     return (
       <div className="min-h-screen bg-[#070a13] text-slate-100 flex flex-col items-center justify-center p-6 text-center select-none font-sans">
         <Lock className="w-12 h-12 text-amber-500 mb-3 animate-pulse" />
@@ -71,7 +71,7 @@ export default function ClienteLayout({ children }: ClienteLayoutProps) {
         </p>
         <div className="flex gap-4">
           <button 
-            onClick={() => navigate(`/portal-cliente-giffoni/${clientCred.slug}/dashboard`, { replace: true })}
+            onClick={() => navigate(`/portal-cliente-giffoni/${session.slug}/dashboard`, { replace: true })}
             className="bg-amber-500 hover:bg-amber-600 outline-none text-slate-950 font-bold px-6 py-3 rounded-xl text-xs transition-all tracking-wider uppercase font-mono"
           >
             Ir ao Seu Painel Geral

@@ -1,68 +1,65 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { CredencialCliente } from "../types";
-import { clienteServiceMock } from "../services/clienteService.mock";
+import { SessaoCliente } from "../types";
+import { authClienteService } from "../services/authClienteService";
+import { sessionClienteService } from "../services/sessionClienteService";
 
 interface AuthContextType {
-  clientCred: CredencialCliente | null;
+  session: SessaoCliente | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  loginClient: (login: string, senha: string) => Promise<{ success: boolean; error?: string; cred?: CredencialCliente }>;
+  loginClient: (login: string, senha: string) => Promise<{ success: boolean; error?: string; session?: SessaoCliente }>;
   logoutClient: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [clientCred, setClientCred] = useState<CredencialCliente | null>(null);
+  const [session, setSession] = useState<SessaoCliente | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Restore session from localStorage if existing
+  // Restore session from temporary sessionStorage on initial mount
   useEffect(() => {
-    const saved = localStorage.getItem("giffoni_client_credential");
-    if (saved) {
-      try {
-        setClientCred(JSON.parse(saved));
-      } catch (e) {
-        localStorage.removeItem("giffoni_client_credential");
-      }
+    const activeSession = sessionClienteService.obterSessao();
+    if (activeSession) {
+      setSession(activeSession);
     }
     setIsLoading(false);
   }, []);
 
-  const loginClient = async (login: string, senha: string): Promise<{ success: boolean; error?: string; cred?: CredencialCliente }> => {
+  const loginClient = async (
+    login: string,
+    senha: string
+  ): Promise<{ success: boolean; error?: string; session?: SessaoCliente }> => {
     setIsLoading(true);
     try {
-      const cred = await clienteServiceMock.autenticarClientePorLoginSenha(login, senha);
-      if (!cred) {
+      const res = await authClienteService.autenticarCliente(login, senha);
+      
+      if (!res.success) {
         setIsLoading(false);
-        return { success: false, error: "invalid_credentials" };
+        const errorResult = res as { success: false; errorCode: string };
+        return { success: false, error: errorResult.errorCode };
       }
 
-      if (!cred.ativo) {
-        setIsLoading(false);
-        return { success: false, error: "inactive" };
-      }
-
-      setClientCred(cred);
-      localStorage.setItem("giffoni_client_credential", JSON.stringify(cred));
+      setSession(res.session);
+      sessionClienteService.iniciarSessao(res.session);
       setIsLoading(false);
-      return { success: true, cred };
+      return { success: true, session: res.session };
     } catch (e) {
       setIsLoading(false);
-      return { success: false, error: "server_error" };
+      return { success: false, error: "FIRESTORE_INDISPONIVEL" };
     }
   };
 
   const logoutClient = () => {
-    setClientCred(null);
-    localStorage.removeItem("giffoni_client_credential");
+    setSession(null);
+    sessionClienteService.encerrarSessao();
   };
 
   return (
     <AuthContext.Provider
       value={{
-        clientCred,
-        isAuthenticated: !!clientCred,
+        session,
+        isAuthenticated: !!session,
         isLoading,
         loginClient,
         logoutClient
@@ -80,4 +77,3 @@ export function useAuth() {
   }
   return context;
 }
-

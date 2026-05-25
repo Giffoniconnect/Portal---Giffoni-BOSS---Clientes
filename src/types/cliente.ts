@@ -9,6 +9,7 @@ export interface Cliente {
   telefone?: string;
   endereco?: string;
   status?: "active" | "inactive";
+  portalAtivo?: boolean;
   criadoEm?: string;
   atualizadoEm?: string;
 

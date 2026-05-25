@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Scale, Lock, ShieldCheck, Mail, ArrowRight, AlertCircle, Building2 } from "lucide-react";
+import { Scale, Lock, ShieldCheck, Mail, ArrowRight, AlertCircle } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 
 export default function ClienteLogin() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { loginClient, clientCred } = useAuth();
+  const { loginClient, session } = useAuth();
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,6 +19,13 @@ export default function ClienteLogin() {
       navigate("/portal-cliente-giffoni/login", { replace: true });
     }
   }, [slug, navigate]);
+
+  // If user is already authenticated with an active session, send them straight to their dashboard
+  useEffect(() => {
+    if (session && session.autenticado && !slug) {
+      navigate(`/portal-cliente-giffoni/${session.slug}/dashboard`, { replace: true });
+    }
+  }, [session, slug, navigate]);
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,16 +45,34 @@ export default function ClienteLogin() {
     try {
       const res = await loginClient(email.trim(), password);
       
-      if (res.success && res.cred) {
-        // Redireciona para o painel dedicado resolved pelo backend/mock
-        navigate(`/portal-cliente-giffoni/${res.cred.slug}/dashboard`);
-      } else if (res.error === "inactive") {
-        setErrorMsg("Portal indisponível. Entre em contato com o escritório.");
+      if (res.success && res.session) {
+        // Successful login: Redirect to dedicated slug dashboard
+        navigate(`/portal-cliente-giffoni/${res.session.slug}/dashboard`);
       } else {
-        setErrorMsg("Acesso negado. E-mail ou senha incorretos.");
+        // Match expected user error mappings precisely
+        switch (res.error) {
+          case "CREDENCIAIS_INVALIDAS":
+            setErrorMsg("Login ou senha inválidos.");
+            break;
+          case "ACESSO_BLOQUEADO":
+            setErrorMsg("Portal indisponível. Entre em contato com o escritório.");
+            break;
+          case "CLIENTE_NAO_ENCONTRADO":
+            setErrorMsg("Portal não encontrado ou indisponível.");
+            break;
+          case "PORTAL_INDISPONIVEL":
+            setErrorMsg("Portal indisponível. Entre em contato com o escritório.");
+            break;
+          case "FIRESTORE_INDISPONIVEL":
+            setErrorMsg("Não foi possível validar o acesso agora. Tente novamente em instantes.");
+            break;
+          default:
+            setErrorMsg("Login ou senha inválidos.");
+            break;
+        }
       }
     } catch (err) {
-      setErrorMsg("Erro de conexão. Verifique suas credenciais.");
+      setErrorMsg("Não foi possível validar o acesso agora. Tente novamente em instantes.");
     } finally {
       setIsSubmitting(false);
     }
@@ -106,7 +131,7 @@ export default function ClienteLogin() {
               <input 
                 type="password"
                 required
-                placeholder="Insira sua senha numérico/alfabética..."
+                placeholder="Insira sua senha..."
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full py-3 pr-4 bg-transparent text-sm focus:outline-none placeholder-slate-600 font-medium"
@@ -115,11 +140,7 @@ export default function ClienteLogin() {
           </div>
 
           {errorMsg && (
-            <div className={`p-3 border rounded-xl text-xs font-semibold flex gap-2 items-start ${
-              errorMsg.includes("indisponível") 
-                ? "bg-rose-500/10 border-rose-500/20 text-rose-350"
-                : "bg-rose-500/10 border-rose-500/20 text-rose-450"
-            }`}>
+            <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs font-semibold text-rose-400 flex gap-2 items-start text-left">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{errorMsg}</span>
             </div>
