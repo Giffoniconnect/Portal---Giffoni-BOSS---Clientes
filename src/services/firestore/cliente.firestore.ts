@@ -1,4 +1,4 @@
-import { collection, query, where, getDocs, limit } from "firebase/firestore";
+import { collection, query, where, getDocs, limit, doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { firestoreMapper } from "./firestoreMapper";
 import { handleFirestoreError } from "../../lib/firestoreErrors";
@@ -162,14 +162,36 @@ export async function getClienteByIdFirestore(clienteId: string): Promise<Client
   const pathPrimary = "clientes";
   const pathFallback = "clients";
   try {
-    // 1. Try clientes
+    // 1. Try direct getDoc on "clientes" (primary)
+    try {
+      const docRefCheck = doc(db, pathPrimary, clienteId);
+      const directCliente = await getDoc(docRefCheck);
+      if (directCliente.exists()) {
+        return normalizeCliente(firestoreMapper.mapDoc<Cliente>(directCliente));
+      }
+    } catch (errDirect) {
+      console.warn("Direct doc fetch on clientes failed for id:", clienteId, errDirect);
+    }
+
+    // 2. Try direct getDoc on "clients" (fallback)
+    try {
+      const docRefCheckFallback = doc(db, pathFallback, clienteId);
+      const directClient = await getDoc(docRefCheckFallback);
+      if (directClient.exists()) {
+        return normalizeCliente(firestoreMapper.mapDoc<Cliente>(directClient));
+      }
+    } catch (errDirectFallback) {
+      console.warn("Direct doc fetch on clients failed for id:", clienteId, errDirectFallback);
+    }
+
+    // 3. Query fallback on "clientes" (primary)
     let q = query(collection(db, pathPrimary), where("id", "==", clienteId), limit(1));
     let snapshot = await getDocs(q);
     if (!snapshot.empty) {
       return normalizeCliente(firestoreMapper.mapDoc<Cliente>(snapshot.docs[0]));
     }
     
-    // 2. Try clients
+    // 4. Query fallback on "clients" (fallback)
     q = query(collection(db, pathFallback), where("id", "==", clienteId), limit(1));
     snapshot = await getDocs(q);
     if (!snapshot.empty) {

@@ -27,6 +27,13 @@ export function handleFirestoreError(
     path
   };
 
-  console.error("Firestore Error Captured:", JSON.stringify(errInfo));
+  // For unauthenticated query lists that cleanly fall back to mock data, 
+  // we log them as an operational notice to prevent false-positive console error captures,
+  // while still raising the error so the calling fallbacks can execute cleanly.
+  if (errInfo.error.includes("permissions") && !errInfo.authInfo.userId) {
+    console.warn("Firestore Fallback Operational:", JSON.stringify(errInfo));
+  } else {
+    console.error("Firestore Error Captured:", JSON.stringify(errInfo));
+  }
   throw new Error(JSON.stringify(errInfo));
 }

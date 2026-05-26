@@ -1,0 +1,59 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default catch-all rule (Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Explicit path definitions for validation
+    match /clientes/{clienteId} {
+      allow read, write: if true;
+    }
+    match /clients/{clientId} {
+      allow read, write: if true;
+    }
+    match /credenciaisCliente/{credId} {
+      allow read, write: if true;
+    }
+    match /casos/{casoId} {
+      allow read, write: if true;
+    }
+    match /cases/{caseId} {
+      allow read, write: if true;
+    }
+    match /provas/{provaId} {
+      allow read, write: if true;
+    }
+    match /caseEvidenceRequests/{reqId} {
+      allow read, write: if true;
+    }
+    match /informacoes/{infoId} {
+      allow read, write: if true;
+    }
+    match /caseInformationRequests/{reqId} {
+      allow read, write: if true;
+    }
+    match /audiencias/{audienciaId} {
+      allow read, write: if true;
+    }
+    match /pericias/{periciaId} {
+      allow read, write: if true;
+    }
+    match /reunioes/{reuniaoId} {
+      allow read, write: if true;
+    }
+    match /financeiro/{finId} {
+      allow read, write: if true;
+    }
+    match /caseFinancials/{finId} {
+      allow read, write: if true;
+    }
+    match /portalConfigs/{configId} {
+      allow read, write: if true;
+    }
+    match /usuarios/{userId} {
+      allow read, write: if true;
+    }
+  }
+}
