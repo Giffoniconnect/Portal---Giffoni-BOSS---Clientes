@@ -6,26 +6,23 @@ import { useAuth } from "../../contexts/AuthContext";
 export default function ClienteLogin() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const { loginClient, session } = useAuth();
+  const { loginClient, logoutClient, session } = useAuth();
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // If accessed by old slug path, redirect to official global login
+  // If user is already authenticated with an active session, check matching slug or redirect
   useEffect(() => {
-    if (slug) {
-      navigate("/portal-cliente-giffoni/login", { replace: true });
+    if (session && session.autenticado) {
+      if (slug && slug !== session.slug) {
+        logoutClient();
+      } else {
+        navigate(`/portal-cliente-giffoni/${session.slug}/dashboard`, { replace: true });
+      }
     }
-  }, [slug, navigate]);
-
-  // If user is already authenticated with an active session, send them straight to their dashboard
-  useEffect(() => {
-    if (session && session.autenticado && !slug) {
-      navigate(`/portal-cliente-giffoni/${session.slug}/dashboard`, { replace: true });
-    }
-  }, [session, slug, navigate]);
+  }, [session, slug, navigate, logoutClient]);
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +43,13 @@ export default function ClienteLogin() {
       const res = await loginClient(email.trim(), password);
       
       if (res.success && res.session) {
+        // After authentication, check if URL slug exists and is different from the session slug
+        if (slug && slug !== res.session.slug) {
+          logoutClient();
+          setErrorMsg("Este login não pertence a este portal.");
+          setIsSubmitting(false);
+          return;
+        }
         // Successful login: Redirect to dedicated slug dashboard
         navigate(`/portal-cliente-giffoni/${res.session.slug}/dashboard`);
       } else {

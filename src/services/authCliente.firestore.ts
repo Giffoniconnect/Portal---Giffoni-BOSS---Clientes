@@ -25,14 +25,38 @@ export async function getCredencialByLoginFirestore(login: string): Promise<Cred
  * Fetch client info from Firestore.
  */
 export async function getClienteByIdFirestore(clienteId: string): Promise<Cliente | undefined> {
-  const path = "clientes";
+  const pathPrimary = "clientes";
+  const pathFallback = "clients";
+  
+  const normalize = (doc: any): Cliente => {
+    if (!doc) return doc;
+    if (doc.name && !doc.nome) {
+      doc.nome = doc.name;
+    }
+    if (doc.nome && !doc.name) {
+      doc.name = doc.nome;
+    }
+    return doc as Cliente;
+  };
+
   try {
-    const q = query(collection(db, path), where("id", "==", clienteId), limit(1));
-    const snapshot = await getDocs(q);
-    if (snapshot.empty) return undefined;
-    return firestoreMapper.mapDoc<Cliente>(snapshot.docs[0]);
+    // 1. Try clientes (primary)
+    let q = query(collection(db, pathPrimary), where("id", "==", clienteId), limit(1));
+    let snapshot = await getDocs(q);
+    if (!snapshot.empty) {
+      return normalize(firestoreMapper.mapDoc<Cliente>(snapshot.docs[0]));
+    }
+
+    // 2. Try clients (fallback)
+    q = query(collection(db, pathFallback), where("id", "==", clienteId), limit(1));
+    snapshot = await getDocs(q);
+    if (!snapshot.empty) {
+      return normalize(firestoreMapper.mapDoc<Cliente>(snapshot.docs[0]));
+    }
+
+    return undefined;
   } catch (error) {
-    handleFirestoreError(error, OperationType.GET, `${path}/id/${clienteId}`);
+    handleFirestoreError(error, OperationType.GET, `${pathPrimary}/id/${clienteId}`);
     return undefined;
   }
 }

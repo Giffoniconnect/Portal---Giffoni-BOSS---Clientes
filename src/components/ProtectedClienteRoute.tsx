@@ -12,13 +12,31 @@ export default function ProtectedClienteRoute({ children }: ProtectedClienteRout
 
   // 1. Check if a valid session exists
   if (!session || !session.autenticado) {
-    return <Navigate to="/portal-cliente-giffoni/login" replace />;
+    return (
+      <Navigate
+        to={
+          slug
+            ? `/portal-cliente-giffoni/${slug}/login`
+            : "/portal-cliente-giffoni/login"
+        }
+        replace
+      />
+    );
   }
 
   // 5. Safe guard: If clienteId is missing/undefined, destroy session and redirect
   if (!session.clienteId) {
     logoutClient();
-    return <Navigate to="/portal-cliente-giffoni/login" replace />;
+    return (
+      <Navigate
+        to={
+          slug
+            ? `/portal-cliente-giffoni/${slug}/login`
+            : "/portal-cliente-giffoni/login"
+        }
+        replace
+      />
+    );
   }
 
   // 2 & 4. If the router slug does not match the authenticated session slug, redirect them appropriately
