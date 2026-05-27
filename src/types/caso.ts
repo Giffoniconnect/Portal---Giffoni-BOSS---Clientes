@@ -23,4 +23,13 @@ export interface Caso {
   stage?: string;
   description?: string;
   lastUpdate?: string;
+
+  // Client Experience customizations for dynamic dashboards
+  clientExperience?: {
+    estimatedDurationDays?: number;
+    progressPercentage?: number;
+    currentPhaseLabel?: string;
+    expectationNotice?: string;
+    currentPhase?: string;
+  };
 }

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
-import { Cliente, Caso, Prova, Audiencia, Pericia, Reuniao, Financeiro } from "../types";
+import { Cliente, Caso, Prova, Audiencia, Pericia, Reuniao, Financeiro, TimelineEvent } from "../types";
 import { clienteServiceMock } from "../services/clienteService.mock";
 import { useAuth } from "./AuthContext";
 
@@ -11,6 +11,7 @@ interface ClientPortalContextType {
   expertOpinions: Pericia[];
   meetings: Reuniao[];
   finance: Financeiro[];
+  timeline: TimelineEvent[];
   isLoading: boolean;
   error: string | null;
   loadPortalBySlug: (slug: string) => Promise<boolean>;
@@ -27,6 +28,7 @@ export function ClientPortalProvider({ children }: { children: ReactNode }) {
   const [expertOpinions, setExpertOpinions] = useState<Pericia[]>([]);
   const [meetings, setMeetings] = useState<Reuniao[]>([]);
   const [finance, setFinance] = useState<Financeiro[]>([]);
+  const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -66,14 +68,16 @@ export function ClientPortalProvider({ children }: { children: ReactNode }) {
         fetchedAudiences,
         fetchedOpinions,
         fetchedMeetings,
-        fetchedFinance
+        fetchedFinance,
+        fetchedTimeline
       ] = await Promise.all([
         clienteServiceMock.getCasosByClienteId(resolvedClient.id),
         clienteServiceMock.getProvasByClienteId(resolvedClient.id),
         clienteServiceMock.getAudienciasByClienteId(resolvedClient.id),
         clienteServiceMock.getPericiasByClienteId(resolvedClient.id),
         clienteServiceMock.getReunioesByClienteId(resolvedClient.id),
-        clienteServiceMock.getFinanceiroByClienteId(resolvedClient.id)
+        clienteServiceMock.getFinanceiroByClienteId(resolvedClient.id),
+        clienteServiceMock.getTimelineByClienteId(resolvedClient.id)
       ]);
 
       setCases(fetchedCases);
@@ -82,6 +86,7 @@ export function ClientPortalProvider({ children }: { children: ReactNode }) {
       setExpertOpinions(fetchedOpinions);
       setMeetings(fetchedMeetings);
       setFinance(fetchedFinance);
+      setTimeline(fetchedTimeline);
       
       setIsLoading(false);
       return true;
@@ -102,6 +107,7 @@ export function ClientPortalProvider({ children }: { children: ReactNode }) {
         expertOpinions,
         meetings,
         finance,
+        timeline,
         isLoading,
         error,
         loadPortalBySlug

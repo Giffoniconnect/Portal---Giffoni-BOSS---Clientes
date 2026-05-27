@@ -3,7 +3,7 @@ import { db } from "../firebase";
 import { firestoreMapper } from "./firestoreMapper";
 import { handleFirestoreError } from "../../lib/firestoreErrors";
 import { OperationType } from "../../types/firestore";
-import { Cliente, Caso, Prova, Informacao, Audiencia, Pericia, Reuniao, Financeiro, CredencialCliente } from "../../types";
+import { Cliente, Caso, Prova, Informacao, Audiencia, Pericia, Reuniao, Financeiro, CredencialCliente, TimelineEvent } from "../../types";
 
 /**
  * Normalizes common client-related fields to guarantee dual layout compatibility.
@@ -337,3 +337,115 @@ export async function getFinanceiroByClienteIdFirestore(
     return [];
   }
 }
+
+/**
+ * Fetch public timeline for a client and optionally filter by caseId.
+ */
+export async function getCaseTimelineByClienteIdFirestore(
+  clienteId: string,
+  caseId?: string
+): Promise<any[]> {
+  const path = "caseTimeline";
+  try {
+    const colRef = collection(db, path);
+    const matchedDocsMap = new Map<string, any>();
+
+    // Query 1: matching clienteId
+    try {
+      const q1 = query(colRef, where("clienteId", "==", clienteId));
+      const snap = await getDocs(q1);
+      for (const d of snap.docs) {
+        const mapped = firestoreMapper.mapDoc<any>(d);
+        matchedDocsMap.set(mapped.id, normalizeCommon<any>(mapped));
+      }
+    } catch (e) {}
+
+    // Query 2: matching clientId
+    try {
+      const q2 = query(colRef, where("clientId", "==", clienteId));
+      const snap = await getDocs(q2);
+      for (const d of snap.docs) {
+        const mapped = firestoreMapper.mapDoc<any>(d);
+        matchedDocsMap.set(mapped.id, normalizeCommon<any>(mapped));
+      }
+    } catch (e) {}
+
+    let list = Array.from(matchedDocsMap.values());
+
+    // Filter in memory for public visibility to prevent composite indexing errors
+    list = list.filter(
+      (d) => d.publicVisible === true || d.visivelParaCliente === true
+    );
+
+    // Filter by caseId or casoId if provided
+    if (caseId) {
+      list = list.filter(
+        (d) => d.caseId === caseId || d.casoId === caseId
+      );
+    }
+
+    // Sort by date descending
+    list.sort((a, b) => {
+      const dateA = a.date || a.data || "";
+      const dateB = b.date || b.data || "";
+      return dateB.localeCompare(dateA);
+    });
+
+    return list;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, `${path}?clienteId=${clienteId}`);
+    return [];
+  }
+}
+
+/**
+ * Fetch public timeline events for a given client ID from BOSS.
+ */
+export async function getTimelineByClienteIdFirestore(
+  clienteId: string
+): Promise<TimelineEvent[]> {
+  const path = "caseTimeline";
+  try {
+    const colRef = collection(db, path);
+    const matchedDocsMap = new Map<string, TimelineEvent>();
+
+    // Query 1: matching clientId
+    try {
+      const q1 = query(colRef, where("clientId", "==", clienteId));
+      const snap = await getDocs(q1);
+      for (const d of snap.docs) {
+        const mapped = firestoreMapper.mapDoc<any>(d);
+        matchedDocsMap.set(mapped.id, normalizeCommon<any>(mapped));
+      }
+    } catch (e) {}
+
+    // Query 2: matching clienteId (as resilient fallback)
+    try {
+      const q2 = query(colRef, where("clienteId", "==", clienteId));
+      const snap = await getDocs(q2);
+      for (const d of snap.docs) {
+        const mapped = firestoreMapper.mapDoc<any>(d);
+        matchedDocsMap.set(mapped.id, normalizeCommon<any>(mapped));
+      }
+    } catch (e) {}
+
+    let list = Array.from(matchedDocsMap.values());
+
+    // Filter in memory for public visibility
+    list = list.filter((item) => item.publicVisible === true);
+
+    // Sort by eventDate desc or createdAt desc
+    list.sort((a, b) => {
+      const dateA = a.eventDate || a.createdAt || "";
+      const dateB = b.eventDate || b.createdAt || "";
+      return dateB.localeCompare(dateA);
+    });
+
+    return list;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, `${path}?clientId=${clienteId}`);
+    return [];
+  }
+}
+
+

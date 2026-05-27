@@ -15,6 +15,7 @@ export * from "./usuario";
 export * from "./portal";
 export * from "./informacao";
 export * from "./credencial";
+export * from "./timeline";
 
 // Legacy type aliases for full backward compatibility with original screens
 export type Client = Cliente;
